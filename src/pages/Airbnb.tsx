@@ -6,103 +6,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Users, Calendar } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { allCounties, townsForCounty } from "@/data/locations";
+import { getProperties, Property } from "@/lib/supabase";
 
 const Airbnb = () => {
-  // Mock data for Airbnb properties
-  const properties = [
-    {
-      id: "1",
-      title: "Cozy Studio in Westlands",
-      location: "Westlands, Nairobi",
-      price: 5500,
-      priceType: "night" as const,
-      rating: 4.8,
-      reviews: 42,
-      bedrooms: 1,
-      bathrooms: 1,
-      area: 350,
-      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
-      type: "airbnb" as const,
-      featured: true
-    },
-    {
-      id: "2",
-      title: "Modern Apartment in Kilimani",
-      location: "Kilimani, Nairobi",
-      price: 8000,
-      priceType: "night" as const,
-      rating: 4.9,
-      reviews: 38,
-      bedrooms: 2,
-      bathrooms: 2,
-      area: 600,
-      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
-      type: "airbnb" as const
-    },
-    {
-      id: "3",
-      title: "Luxury Villa in Karen",
-      location: "Karen, Nairobi",
-      price: 25000,
-      priceType: "night" as const,
-      rating: 5.0,
-      reviews: 15,
-      bedrooms: 4,
-      bathrooms: 3,
-      area: 2500,
-      image: "/lovable-uploads/8db843f4-34b6-4d6b-a426-2c4865fca5eb.png",
-      type: "airbnb" as const,
-      featured: true
-    },
-    {
-      id: "4",
-      title: "Mountain View Lodge in Nanyuki",
-      location: "Nanyuki, Laikipia",
-      price: 12000,
-      priceType: "night" as const,
-      rating: 4.7,
-      reviews: 28,
-      bedrooms: 3,
-      bathrooms: 2,
-      area: 1200,
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-      type: "airbnb" as const
-    },
-    {
-      id: "5",
-      title: "Peaceful Retreat in Nyeri",
-      location: "Nyeri Town, Nyeri",
-      price: 7500,
-      priceType: "night" as const,
-      rating: 4.6,
-      reviews: 22,
-      bedrooms: 2,
-      bathrooms: 2,
-      area: 800,
-      image: "https://images.unsplash.com/photo-1493397212122-2b85dda8106b?w=400&h=300&fit=crop",
-      type: "airbnb" as const
-    },
-    {
-      id: "6",
-      title: "Scenic Cottage in Meru",
-      location: "Meru Town, Meru",
-      price: 6000,
-      priceType: "night" as const,
-      rating: 4.5,
-      reviews: 19,
-      bedrooms: 2,
-      bathrooms: 1,
-      area: 650,
-      image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=300&fit=crop",
-      type: "airbnb" as const
-    }
-  ];
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [county, setCounty] = useState<string>("");
   const [town, setTown] = useState<string>("");
   const towns = townsForCounty(county);
+
+  useEffect(() => {
+    const fetchAirbnbProperties = async () => {
+      try {
+        setLoading(true);
+        const airbnbProperties = await getProperties('airbnb');
+        setProperties(airbnbProperties);
+      } catch (error) {
+        console.error('Error fetching Airbnb properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAirbnbProperties();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -212,17 +142,43 @@ const Airbnb = () => {
           </div>
 
           {/* Properties Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {properties.map((property, index) => (
-              <div 
-                key={property.id} 
-                className="animate-scale-in hover:animate-float"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <PropertyCard {...property} />
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64 mb-4"></div>
+                  <div className="bg-muted rounded h-4 mb-2"></div>
+                  <div className="bg-muted rounded h-4 w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {properties.map((property, index) => (
+                <div 
+                  key={property.id} 
+                  className="animate-scale-in hover:animate-float"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <PropertyCard 
+                    id={property.id}
+                    title={property.title}
+                    location={property.location}
+                    price={property.price}
+                    priceType={property.price_type}
+                    rating={property.rating}
+                    reviews={property.reviews}
+                    bedrooms={property.bedrooms}
+                    bathrooms={property.bathrooms}
+                    area={property.area}
+                    image={property.image}
+                    type={property.type}
+                    featured={property.featured}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Load More */}
           <div className="text-center mt-12 animate-fade-in">

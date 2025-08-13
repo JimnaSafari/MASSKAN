@@ -7,58 +7,30 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Building2, Search } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getProperties, Property } from "@/lib/supabase";
 
 const Office = () => {
+  const [offices, setOffices] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     document.title = "Office Spaces | Masskan Murima";
-  }, []);
 
-  const offices = [
-    {
-      id: "o1",
-      title: "Modern Co-working Space",
-      location: "Westlands, Nairobi",
-      price: 40000,
-      priceType: "month" as const,
-      rating: 4.6,
-      reviews: 21,
-      bedrooms: 0,
-      bathrooms: 2,
-      area: 600,
-      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-      type: "rental" as const
-    },
-    {
-      id: "o2",
-      title: "Grade A Office Floor",
-      location: "Upper Hill, Nairobi",
-      price: 250000,
-      priceType: "month" as const,
-      rating: 4.8,
-      reviews: 14,
-      bedrooms: 0,
-      bathrooms: 4,
-      area: 2500,
-      image: "https://images.unsplash.com/photo-1507209696998-3c532be9b2b4?w=800&h=600&fit=crop",
-      type: "rental" as const,
-      featured: true
-    },
-    {
-      id: "o3",
-      title: "Private Office Suite",
-      location: "Kilimani, Nairobi",
-      price: 120000,
-      priceType: "month" as const,
-      rating: 4.7,
-      reviews: 9,
-      bedrooms: 0,
-      bathrooms: 2,
-      area: 1200,
-      image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&h=600&fit=crop",
-      type: "rental" as const
-    }
-  ];
+    const fetchOfficeProperties = async () => {
+      try {
+        setLoading(true);
+        const officeProperties = await getProperties('office');
+        setOffices(officeProperties);
+      } catch (error) {
+        console.error('Error fetching office properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOfficeProperties();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,12 +88,41 @@ const Office = () => {
       {/* Listings */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6">Available Offices</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {offices.map((o) => (
-              <PropertyCard key={o.id} {...o} />
-            ))}
-          </div>
+          <h2 className="text-2xl font-bold mb-6">
+            {loading ? 'Loading...' : `Available Offices (${offices.length})`}
+          </h2>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64 mb-4"></div>
+                  <div className="bg-muted rounded h-4 mb-2"></div>
+                  <div className="bg-muted rounded h-4 w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {offices.map((office) => (
+                <PropertyCard 
+                  key={office.id} 
+                  id={office.id}
+                  title={office.title}
+                  location={office.location}
+                  price={office.price}
+                  priceType={office.price_type}
+                  rating={office.rating}
+                  reviews={office.reviews}
+                  bedrooms={office.bedrooms}
+                  bathrooms={office.bathrooms}
+                  area={office.area}
+                  image={office.image}
+                  type={office.type}
+                  featured={office.featured}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

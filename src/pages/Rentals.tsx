@@ -6,167 +6,45 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, SlidersHorizontal, MapPin, Building, User, Building2, Shield, CheckCircle, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { allCounties, townsForCounty } from "@/data/locations";
 import { heroBackgroundCss } from "@/data/pageImages";
+import { getProperties, Property } from "@/lib/supabase";
 
 const Rentals = () => {
-  // Mock data for rental properties with management type
-  const properties = [
-    {
-      id: "1",
-      title: "Single Room in South B",
-      location: "South B, Nairobi",
-      price: 15000,
-      priceType: "month" as const,
-      rating: 4.2,
-      reviews: 18,
-      bedrooms: 0.5,
-      bathrooms: 1,
-      area: 200,
-      image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "landlord" as const,
-      landlordName: "John Kamau",
-      landlordVerified: true
-    },
-    {
-      id: "2",
-      title: "Cozy Bedsitter in Kasarani",
-      location: "Kasarani, Nairobi",
-      price: 25000,
-      priceType: "month" as const,
-      rating: 4.3,
-      reviews: 22,
-      bedrooms: 0.75,
-      bathrooms: 1,
-      area: 350,
-      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "agency" as const,
-      agencyName: "Prime Properties Ltd",
-      agencyVerified: true
-    },
-    {
-      id: "3",
-      title: "Modern 1BR Apartment in Kileleshwa",
-      location: "Kileleshwa, Nairobi",
-      price: 45000,
-      priceType: "month" as const,
-      rating: 4.6,
-      reviews: 31,
-      bedrooms: 1,
-      bathrooms: 1,
-      area: 500,
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "landlord" as const,
-      landlordName: "Sarah Wanjiku",
-      landlordVerified: true,
-      featured: true
-    },
-    {
-      id: "4",
-      title: "Spacious 2BR in Westlands",
-      location: "Westlands, Nairobi",
-      price: 65000,
-      priceType: "month" as const,
-      rating: 4.7,
-      reviews: 28,
-      bedrooms: 2,
-      bathrooms: 2,
-      area: 800,
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "agency" as const,
-      agencyName: "Elite Real Estate",
-      agencyVerified: true
-    },
-    {
-      id: "5",
-      title: "Beautiful 3BR Apartment in Kilimani",
-      location: "Kilimani, Nairobi",
-      price: 95000,
-      priceType: "month" as const,
-      rating: 4.8,
-      reviews: 24,
-      bedrooms: 3,
-      bathrooms: 2,
-      area: 1200,
-      image: "https://images.unsplash.com/photo-1493397212122-2b85dda8106b?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "landlord" as const,
-      landlordName: "David Ochieng",
-      landlordVerified: false
-    },
-    {
-      id: "6",
-      title: "Luxury 4BR Family Home in Karen",
-      location: "Karen, Nairobi",
-      price: 180000,
-      priceType: "month" as const,
-      rating: 4.9,
-      reviews: 15,
-      bedrooms: 4,
-      bathrooms: 3,
-      area: 2200,
-      image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "agency" as const,
-      agencyName: "Luxury Homes Kenya",
-      agencyVerified: true,
-      featured: true
-    },
-    {
-      id: "7",
-      title: "Executive 5BR Villa in Runda",
-      location: "Runda, Nairobi",
-      price: 320000,
-      priceType: "month" as const,
-      rating: 4.9,
-      reviews: 12,
-      bedrooms: 5,
-      bathrooms: 4,
-      area: 3500,
-      image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "landlord" as const,
-      landlordName: "Grace Muthoni",
-      landlordVerified: true
-    },
-    {
-      id: "8",
-      title: "Premium 6BR Mansion in Muthaiga",
-      location: "Muthaiga, Nairobi",
-      price: 450000,
-      priceType: "month" as const,
-      rating: 5.0,
-      reviews: 8,
-      bedrooms: 6,
-      bathrooms: 5,
-      area: 5000,
-      image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      managedBy: "agency" as const,
-      agencyName: "Premium Properties Group",
-      agencyVerified: true
-    }
-  ];
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [county, setCounty] = useState<string>("");
   const [town, setTown] = useState<string>("");
   const [managementFilter, setManagementFilter] = useState<string>("all");
   const towns = townsForCounty(county);
 
+  useEffect(() => {
+    const fetchRentalProperties = async () => {
+      try {
+        setLoading(true);
+        const rentalProperties = await getProperties('rental');
+        setProperties(rentalProperties);
+      } catch (error) {
+        console.error('Error fetching rental properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRentalProperties();
+  }, []);
+
   // Filter properties based on management type
   const filteredProperties = properties.filter(property => {
     if (managementFilter === "all") return true;
-    return property.managedBy === managementFilter;
+    return property.managed_by === managementFilter;
   });
 
   // Separate properties by management type
-  const landlordProperties = properties.filter(p => p.managedBy === "landlord");
-  const agencyProperties = properties.filter(p => p.managedBy === "agency");
+  const landlordProperties = properties.filter(p => p.managed_by === "landlord");
+  const agencyProperties = properties.filter(p => p.managed_by === "agency");
 
   return (
     <div className="min-h-screen bg-background">
@@ -272,7 +150,9 @@ const Rentals = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
               <h2 className="text-2xl font-bold mb-2">Available Properties</h2>
-              <p className="text-muted-foreground">Found {properties.length} properties</p>
+              <p className="text-muted-foreground">
+                {loading ? 'Loading...' : `Found ${filteredProperties.length} properties`}
+              </p>
             </div>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <Button variant="outline" size="sm">
@@ -287,11 +167,43 @@ const Rentals = () => {
           </div>
 
           {/* Properties Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProperties.map((property) => (
-              <PropertyCard key={property.id} {...property} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64 mb-4"></div>
+                  <div className="bg-muted rounded h-4 mb-2"></div>
+                  <div className="bg-muted rounded h-4 w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProperties.map((property) => (
+                <PropertyCard 
+                  key={property.id} 
+                  id={property.id}
+                  title={property.title}
+                  location={property.location}
+                  price={property.price}
+                  priceType={property.price_type}
+                  rating={property.rating}
+                  reviews={property.reviews}
+                  bedrooms={property.bedrooms}
+                  bathrooms={property.bathrooms}
+                  area={property.area}
+                  image={property.image}
+                  type={property.type}
+                  featured={property.featured}
+                  managedBy={property.managed_by}
+                  landlordName={property.landlord_name}
+                  landlordVerified={property.landlord_verified}
+                  agencyName={property.agency_name}
+                  agencyVerified={property.agency_verified}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Load More */}
           <div className="text-center mt-12">
@@ -356,8 +268,8 @@ const Rentals = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{property.title}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {property.landlordName}
-                          {property.landlordVerified && (
+                          {property.landlord_name}
+                          {property.landlord_verified && (
                             <CheckCircle className="h-3 w-3 text-green-600 inline ml-1" />
                           )}
                         </p>
@@ -413,8 +325,8 @@ const Rentals = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{property.title}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {property.agencyName}
-                          {property.agencyVerified && (
+                          {property.agency_name}
+                          {property.agency_verified && (
                             <Shield className="h-3 w-3 text-blue-600 inline ml-1" />
                           )}
                         </p>
@@ -452,7 +364,7 @@ const Rentals = () => {
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold mb-2">
-                {properties.filter(p => p.landlordVerified || p.agencyVerified).length}
+                {properties.filter(p => p.landlord_verified || p.agency_verified).length}
               </h3>
               <p className="text-muted-foreground">Verified Properties</p>
             </Card>

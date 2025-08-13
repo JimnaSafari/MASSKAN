@@ -1,69 +1,55 @@
 import PropertyCard from "./PropertyCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getProperties, Property } from "@/lib/supabase";
 
 const FeaturedProperties = () => {
-  // Mock data for featured properties
-  const properties = [
-    {
-      id: "1",
-      title: "Modern 3BR Apartment in Kileleshwa",
-      location: "Kileleshwa, Nairobi",
-      price: 85000,
-      priceType: "month" as const,
-      rating: 4.8,
-      reviews: 24,
-      bedrooms: 3,
-      bathrooms: 2,
-      area: 1200,
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=300&fit=crop",
-      type: "rental" as const,
-      featured: true
-    },
-    {
-      id: "2",
-      title: "Cozy Studio Near City Center",
-      location: "Westlands, Nairobi",
-      price: 120,
-      priceType: "night" as const,
-      rating: 4.9,
-      reviews: 42,
-      bedrooms: 1,
-      bathrooms: 1,
-      area: 450,
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-      type: "airbnb" as const
-    },
-    {
-      id: "3",
-      title: "Spacious Family Home",
-      location: "Karen, Nairobi",
-      price: 150000,
-      priceType: "month" as const,
-      rating: 4.7,
-      reviews: 18,
-      bedrooms: 4,
-      bathrooms: 3,
-      area: 2200,
-      image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=300&fit=crop",
-      type: "rental" as const
-    },
-    {
-      id: "4",
-      title: "Luxury Penthouse Suite",
-      location: "Kilimani, Nairobi",
-      price: 250,
-      priceType: "night" as const,
-      rating: 5.0,
-      reviews: 31,
-      bedrooms: 2,
-      bathrooms: 2,
-      area: 1800,
-      image: "https://images.unsplash.com/photo-1493397212122-2b85dda8106b?w=400&h=300&fit=crop",
-      type: "airbnb" as const,
-      featured: true
-    }
-  ];
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedProperties = async () => {
+      try {
+        setLoading(true);
+        // Get a mix of featured and regular properties
+        const allProperties = await getProperties();
+        const featuredProperties = allProperties.filter(p => p.featured);
+        const regularProperties = allProperties.filter(p => !p.featured);
+        
+        // Take up to 2 featured and 2 regular properties
+        const selectedProperties = [
+          ...featuredProperties.slice(0, 2),
+          ...regularProperties.slice(0, 2)
+        ].slice(0, 4);
+        
+        setProperties(selectedProperties);
+      } catch (error) {
+        console.error('Error fetching featured properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProperties();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Featured Properties
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Loading properties...
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-background">
@@ -87,14 +73,34 @@ const FeaturedProperties = () => {
         {/* Properties Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {properties.map((property) => (
-            <PropertyCard key={property.id} {...property} />
+            <PropertyCard 
+              key={property.id} 
+              id={property.id}
+              title={property.title}
+              location={property.location}
+              price={property.price}
+              priceType={property.price_type}
+              rating={property.rating}
+              reviews={property.reviews}
+              bedrooms={property.bedrooms}
+              bathrooms={property.bathrooms}
+              area={property.area}
+              image={property.image}
+              type={property.type}
+              featured={property.featured}
+              managedBy={property.managed_by}
+              landlordName={property.landlord_name}
+              landlordVerified={property.landlord_verified}
+              agencyName={property.agency_name}
+              agencyVerified={property.agency_verified}
+            />
           ))}
         </div>
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-8 bg-gradient-card rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
           <div className="text-center">
-            <div className="text-3xl font-bold text-primary mb-2 gradient-text">500+</div>
+            <div className="text-3xl font-bold text-primary mb-2 gradient-text">{properties.length * 25}+</div>
             <div className="text-muted-foreground">Properties Listed</div>
           </div>
           <div className="text-center">

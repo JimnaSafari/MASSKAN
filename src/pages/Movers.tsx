@@ -7,43 +7,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Shield, Phone, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getMovingServices, MovingService } from "@/lib/supabase";
 
 const Movers = () => {
-  const movingServices = [
-    {
-      id: "1",
-      name: "QuickMove Kenya",
-      rating: 4.8,
-      reviews: 156,
-      location: "Nairobi, Kenya",
-      services: ["Local Moving", "Long Distance", "Packing"],
-      priceRange: "KSh 5,000 - 25,000",
-      verified: true,
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop"
-    },
-    {
-      id: "2",
-      name: "Reliable Movers Ltd",
-      rating: 4.9,
-      reviews: 203,
-      location: "Nairobi & Mombasa",
-      services: ["International", "Storage", "Insurance"],
-      priceRange: "KSh 8,000 - 50,000",
-      verified: true,
-      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop"
-    },
-    {
-      id: "3",
-      name: "Express Movers",
-      rating: 4.7,
-      reviews: 98,
-      location: "Kisumu, Nakuru",
-      services: ["Same Day", "Office Moving", "Fragile Items"],
-      priceRange: "KSh 3,000 - 15,000",
-      verified: true,
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop"
-    }
-  ];
+  const [movingServices, setMovingServices] = useState<MovingService[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMovingServices = async () => {
+      try {
+        setLoading(true);
+        const services = await getMovingServices();
+        setMovingServices(services);
+      } catch (error) {
+        console.error('Error fetching moving services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovingServices();
+  }, []);
 
   const marketplaceItems = [
     {
@@ -131,65 +116,79 @@ const Movers = () => {
       {/* Moving Services Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Trusted Moving Services</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            {loading ? 'Loading Services...' : 'Trusted Moving Services'}
+          </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {movingServices.map((service) => (
-              <Card key={service.id} className="hover:shadow-card transition-all duration-300">
-                <CardHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        {service.name}
-                        {service.verified && (
-                          <Badge className="bg-green-100 text-green-800">
-                            <Shield className="h-3 w-3 mr-1" />
-                            Verified
-                          </Badge>
-                        )}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          <span className="font-medium">{service.rating}</span>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted rounded-lg h-64 mb-4"></div>
+                  <div className="bg-muted rounded h-4 mb-2"></div>
+                  <div className="bg-muted rounded h-4 w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+              {movingServices.map((service) => (
+                <Card key={service.id} className="hover:shadow-card transition-all duration-300">
+                  <CardHeader>
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          {service.name}
+                          {service.verified && (
+                            <Badge className="bg-green-100 text-green-800">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                            <span className="font-medium">{service.rating}</span>
+                          </div>
+                          <span className="text-muted-foreground">({service.reviews} reviews)</span>
                         </div>
-                        <span className="text-muted-foreground">({service.reviews} reviews)</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    {service.location}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="text-sm font-medium mb-2">Services:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {service.services.map((s, i) => (
-                          <Badge key={i} variant="outline">{s}</Badge>
-                        ))}
+                    <div className="flex items-center text-muted-foreground">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      {service.location}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm font-medium mb-2">Services:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {service.services.map((s, i) => (
+                            <Badge key={i} variant="outline">{s}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Price Range: </span>
+                        <span className="text-primary">{service.price_range}</span>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" className="flex-1">
+                          <Phone className="h-4 w-4 mr-1" />
+                          Contact
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex-1">
+                          View Details
+                        </Button>
                       </div>
                     </div>
-                    <div className="text-sm">
-                      <span className="font-medium">Price Range: </span>
-                      <span className="text-primary">{service.priceRange}</span>
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" className="flex-1">
-                        <Phone className="h-4 w-4 mr-1" />
-                        Contact
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
