@@ -16,7 +16,7 @@ interface PropertyCardProps {
   bathrooms: number;
   area: number;
   image: string;
-  type: "rental" | "airbnb";
+  type: "rental" | "airbnb" | "office";
   featured?: boolean;
   managedBy?: "landlord" | "agency";
   landlordName?: string;

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { signUp } from '@/lib/supabase';
+import { signUp } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 const signupSchema = z.object({
@@ -52,10 +52,14 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
     setError(null);
 
     try {
-      await signUp(data.email, data.password, data.fullName);
+      await signUp(data.email, data.password, {
+        full_name: data.fullName,
+        phone: data.phone,
+        user_type: data.userType
+      });
       toast({
         title: 'Account created!',
-        description: 'Please check your email to verify your account.',
+        description: 'You have successfully created your account.',
       });
       onSuccess?.();
     } catch (error: any) {

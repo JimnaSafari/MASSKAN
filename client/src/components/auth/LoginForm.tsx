@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { signIn } from '@/lib/supabase';
+import { signIn } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({

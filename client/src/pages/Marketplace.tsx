@@ -8,7 +8,7 @@ import { MapPin, Sofa, Laptop, Car, Package, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import { getMarketplaceItems, MarketplaceItem } from "@/lib/supabase";
+import { getMarketplaceItems, MarketplaceItem } from "@/lib/api";
 
 const Marketplace = () => {
   const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);

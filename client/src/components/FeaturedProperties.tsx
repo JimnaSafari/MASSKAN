@@ -2,7 +2,7 @@ import PropertyCard from "./PropertyCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getProperties, Property } from "@/lib/supabase";
+import { getProperties, Property } from "@/lib/api";
 
 const FeaturedProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);

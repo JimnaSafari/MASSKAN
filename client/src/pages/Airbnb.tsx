@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MapPin, Users, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
 import { allCounties, townsForCounty } from "@/data/locations";
-import { getProperties, Property } from "@/lib/supabase";
+import { getProperties, Property } from "@/lib/api";
 
 const Airbnb = () => {
   const [properties, setProperties] = useState<Property[]>([]);

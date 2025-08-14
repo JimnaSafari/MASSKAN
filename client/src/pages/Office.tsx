@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Building2, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getProperties, Property } from "@/lib/supabase";
+import { getProperties, Property } from "@/lib/api";
 
 const Office = () => {
   const [offices, setOffices] = useState<Property[]>([]);

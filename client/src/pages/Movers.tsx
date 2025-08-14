@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Shield, Phone, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getMovingServices, MovingService } from "@/lib/supabase";
+import { getMovingServices, MovingService } from "@/lib/api";
 
 const Movers = () => {
   const [movingServices, setMovingServices] = useState<MovingService[]>([]);

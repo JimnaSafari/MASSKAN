@@ -9,7 +9,7 @@ import { Search, Filter, SlidersHorizontal, MapPin, Building, User, Building2, S
 import { useState, useEffect } from "react";
 import { allCounties, townsForCounty } from "@/data/locations";
 import { heroBackgroundCss } from "@/data/pageImages";
-import { getProperties, Property } from "@/lib/supabase";
+import { getProperties, Property } from "@/lib/api";
 
 const Rentals = () => {
   const [properties, setProperties] = useState<Property[]>([]);
